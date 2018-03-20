@@ -1,0 +1,56 @@
+<div layout="row" layout-align="center center">
+    <md-card id="suggestionFormContainer" >
+        <md-card-title class="suggestionTitle" style=>
+            <md-card-title-text>
+                <span class="md-headline">Upload Your Projects</span>
+            </md-card-title-text>
+        </md-card-title>
+        <md-card-content style="padding-top:15px">
+
+            instructions: <br/>
+            <ol>
+                <li>Ensure that your spreadsheet is using the correct headers.</li>
+                <li>Export/download your spreadsheet as a csv.</li>
+                <li>Upload your CSV here.</li>
+            </ol>
+            <div layout="row" layout-align="center center">
+                <input type="file" 
+                    file-reader="fileContent"  
+                    users="users"
+                    is-valid="upload.isValid"
+                    error-message="upload.errorMessage"
+                />
+            </div>
+<!--             <div ng-if="fileContent" class="content">
+              {{fileContent}}
+            </div> -->
+
+            <md-card class="confirmationContainer" ng-if="upload.isValid != null" ng-style="upload.isValid ? {'background-color': '#078307'} : {'background-color': '#c33b3b'}">
+
+                <div ng-if="upload.isValid">
+                    <i class="fa fa-check-circle" style="font-size:30px"></i>
+                    <span class="confirmMessage">
+                        Identified {{fileContent.length}} Project(s).
+                        looks good!
+                    </span>
+                </div>
+                <div ng-if="upload.errorMessage.length > 0">
+                    <i class="fa fa-times-circle" style="font-size:30px" ></i>
+                    <span class="confirmMessage">
+                        something went wrong: 
+                        {{upload.errorMessage}}
+                    </span>
+                </div> 
+            </md-card>
+
+        </md-card-content>
+        <md-card-actions layout="row" layout-align="end center">
+            <div ng-if="upload.isValid">
+                <md-button class="md-raised md-primary" ng-click="uploadProjects()">
+                    <i class="fa fa-paper-plane"></i>
+                    &ensp;Upload
+                </md-button>
+            </div>
+        </md-card-actions>
+    </md-card>
+</div>

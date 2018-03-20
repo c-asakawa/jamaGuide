@@ -1,0 +1,65 @@
+<div layout="row" layout-align="center center">
+    <md-card id="suggestionFormContainer" >
+        <md-card-title class="suggestionTitle">
+            <md-card-title-text>
+                <span class="md-headline">Great Ideas Start Here</span>
+            </md-card-title-text>
+        </md-card-title>
+        <md-card-content>
+            <form name="suggestionForm">
+
+                <!-- username and date -->
+                <div layout="row" layout-align="center center" layout-xs="column" style="margin-top:20px">
+                    <md-input-container class="md-block fullWidth smallerMargin" flex-xs="100" flex-gt-xs="70">
+                        <label>Submitted By</label>
+                        <input ng-model="suggestion.username">
+                    </md-input-container>
+                    <md-input-container class="md-block fullWidth smallerMargin" flex-xs="100" flex-gt-xs="30">
+                        <label>Date</label>
+                        <input ng-model="suggestion.date" disabled="true">
+                    </md-input-container>
+                </div>
+
+
+                <!-- subject input -->
+                <md-input-container class="md-block smallerMargin">
+                    <label>Subject</label>
+                    <input ng-model="suggestion.subject">
+                </md-input-container>
+
+                <div layout="row" layout-align="center" layout-xs="column">
+                    <div class="checkboxContainer" ng-repeat="checkbox in suggestion.checkboxes" ng-if="$index < 3">
+                      <md-checkbox class="md-primary" ng-model="checkbox.value">
+                        {{checkbox.name}}
+                      </md-checkbox>
+                    </div> 
+                </div>
+                <div layout="row" layout-align="center" layout-xs="column">
+                    <div class="checkboxContainer" ng-repeat="checkbox in suggestion.checkboxes" ng-if="$index >= 3">
+                      <md-checkbox class="md-primary" ng-model="checkbox.value">
+                        {{checkbox.name}}
+                      </md-checkbox>
+                    </div> 
+                </div>
+
+                <div layout="row" layout-align="center" layout-xs="column">
+                    <md-input-container class="md-block otherCheckboxText" ng-show="isOtherCheckboxSelected()">
+                        <label>Please Specify</label>
+                        <textarea ng-model="suggestion.otherDescription" md-maxlength="150" rows="3" md-select-on-focus=""></textarea>
+                    </md-input-container>
+                </div>
+
+            </form>
+
+            <!-- this line instantiates  -->
+            <div id="text-editor"></div>
+
+        </md-card-content>
+        <md-card-actions layout="row" layout-align="end center">
+            <md-button class="md-raised md-primary" ng-click="sendSuggestion()">
+                <i class="fas fa-paper-plane"></i>
+                &ensp;Send
+            </md-button>
+        </md-card-actions>
+    </md-card>
+</div>
