@@ -7,7 +7,9 @@ app.directive('fileReader', function() {
         fileReader: "=",
         isValid: "=",
         errorMessage: "=",
-        users: "="
+        users: "=",
+        statusList: "=",
+        categoryList: "=",
     },
         link: function(scope, element) {
             $(element).on('change', function(changeEvent) {
@@ -31,6 +33,16 @@ app.directive('fileReader', function() {
                             var productManager = getUserId(columns[3]);
                             var sponser = getUserId(columns[4]);
 
+                            var statusId = getOptionId(columns[8], scope.statusList);
+
+                            var categoryId = getOptionId(columns[9], scope.categoryList);
+
+                            // var startDateValues = columns[6].split('-');
+                            // var endDateValues = columns[7].split('-');
+
+                            // console.log('validating start date', startDateValues);
+                            // console.log('validating end date', endDateValues);
+
                             console.log('columns', columns)
 
                             // check if required fields are valid
@@ -49,9 +61,33 @@ app.directive('fileReader', function() {
                             // check that the sponser matches a user
                             else if (sponser == -1) {
                                 scope.isValid = false;
-                                scope.errorMessage = 'Unable to find Sponser on row: ' + rowNumber;;
+                                scope.errorMessage = 'Unable to find Sponser on row: ' + rowNumber;
                                 break;
                             } 
+                            // check that the status matches a picklist option
+                            else if (statusId == -1) {
+                                scope.isValid = false;
+                                scope.errorMessage = 'Unable to find status option on row: ' + rowNumber;
+                                break;
+                            }
+                            // check that the status matches a picklist option
+                            else if (categoryId == -1) {
+                                scope.isValid = false;
+                                scope.errorMessage = 'Unable to find category option on row: ' + rowNumber;
+                                break;
+                            }
+                            // the following two conditions check for valid dates
+                            else if (!validateDate(columns[6])) {
+                                scope.isValid = false;
+                                scope.errorMessage = 'Invalid start date on row: ' + rowNumber;
+                                break;
+                            }
+                            else if (!validateDate(columns[7])) {
+                                scope.isValid = false;
+                                scope.errorMessage = 'Invalid end date on row: ' + rowNumber;
+                                break;
+                            }
+
                             // everything checks out. create the project object
                             else {            
 
@@ -64,31 +100,30 @@ app.directive('fileReader', function() {
                                     'objective'      : columns[5],
                                     'startDate'      : columns[6],
                                     'endDate'        : columns[7],
-                                    'status'         : columns[8],
-                                    'category'       : columns[9],
+                                    'status'         : statusId,
+                                    'category'       : categoryId,
                                 };
 
                                 console.log('adding parsed project:', projectFields);
                                 parsedContent.push(projectFields);
-
-
                             }
                         }
+                        // update the parsed content to the app scope
                         scope.$apply(function () {
                             scope.fileReader = parsedContent;
                             // scope.testing = contents;
                         });
                     };
-              
                     r.readAsText(files[0]);
                 }
-                // helper methods
 
                 // gets the user id from the name or username
                 // returns the id, -1 for error
                 function getUserId(name) {
+
+                    var whiteSpace = name.replace(/\s/g, '');
                     // check for an empty field
-                    if (name == '') {
+                    if (name == '' || whiteSpace == '') {
                         return ''; // pass through the empty name
                     }
                     for (var i=0; i < scope.users.length; i++) {
@@ -105,16 +140,60 @@ app.directive('fileReader', function() {
                     return -1;
                 }
 
+                // gets the id from a list of picklist options
+                // returns the id, -1 for error
+                function getOptionId(name, optionList) {
+
+                    var whiteSpace = name.replace(/\s/g, '');
+                    if (name == '' || whiteSpace == '') {
+                        return '';
+                    }
+                    for (var i=0; i < optionList.length; i++) {
+                        console.log('comparing:', name, optionList[i].name)
+
+                        name = name.replace(/\s/g, '');
+                        var option = optionList[i].name.replace(/\s/g, '');
+                        if (name == option) {
+                            console.log('match!')
+                            return optionList[i].id;
+                        }
+                        else {
+                            console.log('no match')
+                        }
+                    }
+                    console.log('returning error!!!')
+                    return -1;
+                }
+                // validations for the date returns a boolean
+                function validateDate(date) {
+                    // empty date? thats okay
+                    if (date == '') {
+                        return true;
+                    }
+                    var dateValues = date.split('-');
+
+                    // TODO: verify that the dates have type of number. and range that the range is acceptable.
+
+                    if (dateValues.length == 3 && dateValues[0].length == 4 && dateValues[1].length == 2 && dateValues[2].length == 2) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+
+
             });
         }
     };
 });
 
 
-app.controller('appController', function($scope, $http, $timeout, $mdDialog, $mdToast) {
+app.controller('appController', function($scope, $http, $timeout, $interval, $mdDialog, $mdToast) {
 
     const proxyURL = 'http://127.0.0.1:5555/';
 
+    // object used by for storing data from the suggestion form
     $scope.suggestion = {
         checkboxes: [
             { name: 'Improve Quality', value: false },
@@ -128,6 +207,7 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
         otherDescription: '',
         date: getPrettyDate(),
         username: '',
+        subject: '',
     }
 
     $scope.items = [];
@@ -150,11 +230,22 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
     getCategoryOptions(function(success, response) {
         if (success) {
             console.log('geting category options - response:', response);
-            $scope.statusOptions = response.data;
+            $scope.categoryOptions = response.data;
         }
     });
 
-
+    // wait for the DOM to finished rendering
+    $timeout(function () {
+        $scope.quill = new Quill('#text-editor', {
+            modules: {
+                toolbar: [
+                    [{ header: [1, 2, false] }],
+                    ['bold', 'italic', 'underline']
+            ]},
+            placeholder: 'Compose a suggestion...',
+            theme: 'snow'  // or 'bubble'
+        });
+    }, 500);
 
     ////////////////////////////////////////////////////////////
 
@@ -189,10 +280,6 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
 
     function postSuggestion(suggestionObject, callback) {
 
-        var today = new Date();
-        today = today.toUTCString();
-
-
         var picklistMap = {
             'Improve Quality': 518,
             'Improve Service': 519,
@@ -206,7 +293,7 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
         var params = '?username=' + suggestionObject.username;
         params += '&subject=' + suggestionObject.subject;
         params += '&description=' + suggestionObject.description;
-        params += '&date=' + today;
+        params += '&date=' + getJamaDate();
         params += '&other=' + suggestionObject.otherDescription;
 
         // get the list of selected checkboxes
@@ -249,7 +336,7 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
     function getStatusOptions(callback) {
         $http({
             method: 'GET',
-            url: proxyURL + 'get-category-options'
+            url: proxyURL + 'get-status-options'
         }).then(function successCallback(response) {
             console.log('success', response)
             return callback(true, response);
@@ -261,7 +348,7 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
     function getCategoryOptions(callback) {
         $http({
             method: 'GET',
-            url: proxyURL + 'get-users'
+            url: proxyURL + 'get-category-options'
         }).then(function successCallback(response) {
             console.log('success', response)
             return callback(true, response);
@@ -289,39 +376,30 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
         
     }
 
-
-    // wait for the DOM to finished rendering
-    $timeout(function () {
-        $scope.quill = new Quill('#text-editor', {
-            modules: {
-                toolbar: [
-                    [{ header: [1, 2, false] }],
-                    ['bold', 'italic', 'underline']
-            ]},
-            placeholder: 'Compose a suggestion...',
-            theme: 'snow'  // or 'bubble'
-        });
-    }, 500);
-
-
     function getPrettyDate() {
         var today = new Date();
         var month = padDate(today.getMonth());
         var day = padDate(today.getDate());
         var year = today.getFullYear();
-
         return month + '/' + day + '/' + year;
-
-        function padDate(input) {
-            if (input < 10) {
-                return '0' + input;
-            }
-            return input;
-        }
-
     }
 
+    function getJamaDate() {
+        var today = new Date();
+        var month = padDate(today.getMonth());
+        var day = padDate(today.getDate());
+        var year = today.getFullYear();
+        return year + '-' + month + '-' + day;
+    }
 
+    function padDate(input) {
+        if (input < 10) {
+            return '0' + input;
+        }
+        return input;
+    }
+
+    // displays a confirmation dialog
     $scope.showConfirm = function(header, message) {
         $mdDialog.show(
             $mdDialog.alert()
@@ -333,35 +411,39 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
         );
     };
 
+    // displays a toast notification
     $scope.showToast = function(message) {
-
         var toast = $mdToast.simple()
             .textContent(message)
             .hideDelay(3000)
             .position('top right')
-
         $mdToast.show(toast);
     };
 
-
-
+    // helper method to keep track of the other checkbox.
     $scope.isOtherCheckboxSelected = function() {
         return $scope.suggestion.checkboxes[$scope.suggestion.checkboxes.length-1].value;
     }
 
-
-    $scope.uploadProjects = function() {
-        console.log('project content:', $scope.fileContent);
-        for (var i=0; i < $scope.fileContent.length; i++) {
-            postProject($scope.fileContent[i], function(response){
+    $scope.uploadProjects = function(content) {
+        console.log('project content:', content);
+ 
+        for (var i=0; i < content.length; i++) {
+            postProject(content[i], function(response){
                 console.log('added project', response);
-            })
-            
+            });
         }
+
+        // TODO: this should be an array of promises that resolve to show this message.
+        $timeout(function() {
+            $scope.showConfirm('Success', 'Your projects were successfully uploaded!');
+        }, 800);
 
     }
 
     $scope.sendSuggestion = function() {
+
+        console.log('suggestion:', $scope.suggestion)
 
         //TODO add error checking here
         $scope.suggestion.description = $scope.quill.container.firstChild.innerHTML;
@@ -369,22 +451,26 @@ app.controller('appController', function($scope, $http, $timeout, $mdDialog, $md
         var text = $scope.quill.getText();
 
         // empty text string will have a length of 1
-        if (text.length < 2){
-            console.log('error enter text');
-            $scope.showToast('Empty Description: Enter your suggestion')
+        if ($scope.suggestion.username == '') {
+            $scope.showToast('Enter your name: Take credit for this suggestion');
         }
+        else if ($scope.suggestion.subject == '') {
+            $scope.showToast('Empty Subject: Enter a subject for your suggestion');
 
-
-        postSuggestion($scope.suggestion, function(success, response) {
-            if (success) {
-                $scope.showConfirm('Success', 'Your suggestion was successfully sent. Thanks for your great idea!');
-            }
-            else {
-                $scope.showConfirm('Error', 'Unable to submit your suggestion, contact your system administrator.');
-            }
-        });
-
+        }
+        else if (text.length < 2){
+            console.log('error enter text');
+            $scope.showToast('Empty Description: Enter your suggestion');
+        }
+        else {
+            postSuggestion($scope.suggestion, function(success, response) {
+                if (success) {
+                    $scope.showConfirm('Success', 'Your suggestion was successfully sent. Thanks for your great idea!');
+                }
+                else {
+                    $scope.showConfirm('Error', 'Unable to submit your suggestion, please contact your system administrator.');
+                }
+            });
+        }
     }
-
-
 });

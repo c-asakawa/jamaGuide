@@ -12,7 +12,7 @@
                 <div layout="row" layout-align="center center" layout-xs="column" style="margin-top:20px">
                     <md-input-container class="md-block fullWidth smallerMargin" flex-xs="100" flex-gt-xs="70">
                         <label>Submitted By</label>
-                        <input ng-model="suggestion.username">
+                        <input ng-model="suggestion.username" ng-required="true">
                     </md-input-container>
                     <md-input-container class="md-block fullWidth smallerMargin" flex-xs="100" flex-gt-xs="30">
                         <label>Date</label>
@@ -24,7 +24,7 @@
                 <!-- subject input -->
                 <md-input-container class="md-block smallerMargin">
                     <label>Subject</label>
-                    <input ng-model="suggestion.subject">
+                    <input ng-model="suggestion.subject" ng-required="true">
                 </md-input-container>
 
                 <div layout="row" layout-align="center" layout-xs="column">

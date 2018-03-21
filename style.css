@@ -3,36 +3,39 @@
 }
 
 #suggestionFormContainer {
-	max-width: 640px;
-	width: 100%;
-	margin-top: 30px;
+    max-width: 640px;
+    width: 100%;
+    margin-top: 30px;
 }
 
 .fullWidth {
-	width: 100%;
+    width: 100%;
 }
 .checkboxContainer {
-	width: 200px;
+    width: 200px;
 }
 .otherCheckboxText {
     width: 100%;
     max-width: 605px;
 }
 .smallerMargin {
-	margin: 5px !important;
+    margin: 5px !important;
 }
 .suggestionTitle {
-	border-bottom: 1px solid #e0e0e0;
+    border-bottom: 1px solid #e0e0e0;
     padding: 10px 20px;
 }
 
 .confirmationContainer {
-	height: 69px;
+    height: 69px;
     color: white;
     padding: 20px;
 }
 .confirmMessage {
-	position: absolute;
-    left: 160px;
-    margin-top: 5px;
+    position: relative;
+    left: 10px;
+    top: -3px;
+}
+.smallPadding {
+    padding: 7px;
 }

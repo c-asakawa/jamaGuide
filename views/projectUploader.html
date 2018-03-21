@@ -7,11 +7,32 @@
         </md-card-title>
         <md-card-content style="padding-top:15px">
 
-            instructions: <br/>
+            <h3>&ensp;&ensp;&ensp;&ensp;Instructions:</h3>
             <ol>
-                <li>Ensure that your spreadsheet is using the correct headers.</li>
-                <li>Export/download your spreadsheet as a csv.</li>
-                <li>Upload your CSV here.</li>
+                <li class="smallPadding">
+                    Ensure that your spreadsheet is using the correct format. 
+                    Use this example to help you get started, 
+                    <a href="DemoProjectUpload.csv" target="_blank">download example</a>.
+                </li>
+                <li class="smallPadding">
+                    Make sure to fill out the project key and name for every project entered, these are required fields. 
+                    All the other fields are optional and may be left blank.
+                </li>
+                <li class="smallPadding">
+                    Ensure that the values entered into the <span class="codeBlock">project key</span> are unique, and that the project key is not already in use within your Jama org. Jama will not allow you to create a new project with duplicate project keys.
+                </li>
+                <li class="smallPadding">
+                    Verify that the Project Manager and Sponser's first and last names are spelt correctly, 
+                    you can also enter in a username instead of first and last name.
+                </li>
+                <li class="smallPadding">
+                    Make sure that the start and end dates have the following format <br/> YYYY-MM-DD.
+                </li>
+                <li class="smallPadding">
+                    Verify that the status and category are spelt correctly and are available options within Jama.
+                </li>
+                <li class="smallPadding">Export or download your spreadsheet as a CSV.</li>
+                <li class="smallPadding">Upload your CSV here.</li>
             </ol>
             <div layout="row" layout-align="center center">
                 <input type="file" 
@@ -19,25 +40,29 @@
                     users="users"
                     is-valid="upload.isValid"
                     error-message="upload.errorMessage"
+                    status-list="statusOptions"
+                    category-list="categoryOptions"
                 />
             </div>
+
+            <!-- testing -->
 <!--             <div ng-if="fileContent" class="content">
               {{fileContent}}
             </div> -->
+
 
             <md-card class="confirmationContainer" ng-if="upload.isValid != null" ng-style="upload.isValid ? {'background-color': '#078307'} : {'background-color': '#c33b3b'}">
 
                 <div ng-if="upload.isValid">
                     <i class="fa fa-check-circle" style="font-size:30px"></i>
                     <span class="confirmMessage">
-                        Identified {{fileContent.length}} Project(s).
-                        looks good!
+                        Looks good! Identified {{fileContent.length}} Project(s).
                     </span>
                 </div>
                 <div ng-if="upload.errorMessage.length > 0">
                     <i class="fa fa-times-circle" style="font-size:30px" ></i>
                     <span class="confirmMessage">
-                        something went wrong: 
+                        Something went wrong: 
                         {{upload.errorMessage}}
                     </span>
                 </div> 
@@ -46,7 +71,7 @@
         </md-card-content>
         <md-card-actions layout="row" layout-align="end center">
             <div ng-if="upload.isValid">
-                <md-button class="md-raised md-primary" ng-click="uploadProjects()">
+                <md-button class="md-raised md-primary" ng-click="uploadProjects(fileContent)">
                     <i class="fa fa-paper-plane"></i>
                     &ensp;Upload
                 </md-button>

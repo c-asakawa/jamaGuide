@@ -6,14 +6,12 @@ const port = 5555;
 const host = 'https://services-test.jamacloud.com/rest/v1/';
 
 // TODO: move these credentials into environment vars
-const username = 'casakawa';
-const password = 'Lockedikl3';
+
 const credentials = {
     username: 'casakawa',
     password: 'Lockedikl3'
 }
 
-var url = 'https://' + username + ':' + password + '@' + host;
 
 app.use(function(req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -64,6 +62,7 @@ app.post('/post-suggestion', function(req, res) {
         "name": subject,
         "description": description,
         "other_description": other,
+        "date": date,
         "suggestion_pick_list": JSON.parse(improvements),
       }
     }
@@ -95,13 +94,13 @@ app.post('/post-project', function(req, res) {
             "projectKey": req.param('key'),
             "name": req.param('name'),
             "description": req.param('description'),
-            "category": req.param('category'),
+            "projectGroup": req.param('category'),
             "projectManager": req.param('project-manager'),
-            "sponser": req.param('sponser'),
-            "status=": req.param('status='),
-            "objective": req.param('objective'),
-            "startDate": req.param('start-date'),
-            "endDate": req.param('end-date'),
+            "user1": req.param('sponser'),
+            "statusId": req.param('status'),
+            "text1": req.param('objective'),
+            "date1": req.param('start-date'),
+            "date2": req.param('end-date'),
         }
     }
 
@@ -172,26 +171,6 @@ app.get('/get-category-options', function(req, res) {
         }        
     });
 });
-
-app.get('/get-suggestions', function(req, res) {
-    console.log('getting suggestions');
-
-    request(url + 'items/6854/children', function(error, response, body) {
-        if (error) {
-            console.log('oh no...')
-        }
-        // console.log('error:', error); // Print the error if one occurred
-        // console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
-        // console.log('body:', body); // Print the HTML for the Google homepage.
-        var parsed = JSON.parse(body);
-        var data = parsed.data;
-        console.log(data);
-
-        res.send(data)
-
-    });
-});
-
 
 
 // recursive method to get all the pages
